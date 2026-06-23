@@ -182,7 +182,7 @@ fetch(webAppUrl, {
 .then(response => response.json())
 .then(data => {
     if (data.result === 'success') {
-        // إعادة طباعة أول 3 خانات وباقي بيانات التذكرة بنجاح
+        // طباعة البيانات بالكامل داخل التذكرة بما فيها أول 3 خانات
         document.getElementById('lblStudentName').innerText = studentName;
         document.getElementById('lblNationalId').innerText = nationalId;
         document.getElementById('lblAdminName').innerText = adminName;
@@ -194,18 +194,19 @@ fetch(webAppUrl, {
         document.getElementById('lblParentPhone').innerText = parentPhone;
         document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeslot;
 
-        // إخفاء الفورم وإظهار التذكرة للمواطن
+        // إخفاء استمارة الحجز وإظهار التذكرة
         document.getElementById('bookingFormSection').style.display = 'none';
         document.getElementById('ticketSection').style.display = 'block';
     } else {
-        // في حال رفض الشيت للحجز (رقم قومي مكرر أو فترة ممتلئة) تظهر هذه الرسالة فوراً
+        // إذا رفض السكريبت الحجز بسبب التكرار أو اكتمال العدد (أقل من 6)
         alert(data.message);
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
     }
 })
 .catch(error => {
-    alert("حدث خطأ في الاتصال بالشبكة، يرجى المحاولة مرة أخرى.");
+    console.error("Error:", error);
+    alert("حدث خطأ في الاتصال بالسيرفر، يرجى المحاولة مرة أخرى.");
     submitBtn.innerText = originalText;
     submitBtn.disabled = false;
 });
