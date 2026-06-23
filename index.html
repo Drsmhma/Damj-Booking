@@ -168,19 +168,15 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     formData.append('time_slot', timeSlot);
 
     // ضع رابط الـ Web App الخاص بك هنا بين علامتي الاقتباس
-    const webAppUrl = 'https://script.google.com/macros/s/AKfycby8riqqo0WKH0sowoMgkPhaDBm_QdC1mmHxAECmkggm4JoOiZ7JDvF3Xz6W9Te40uWS2w/exec'; 
+    const webAppUrl = 'https://script.google.com/macros/s/AKfycbyXLHxvUZf-MgDYkVGP4sVfEqT_8bBhpMPIc-rWcfiWEZhiNQGuS94tfLwY5gIuYu4dAQ/exec'; 
 
     fetch(webAppUrl, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.result === 'success') {
-            document.getElementById('lblStudentName').innerText = studentName;
-            document.getElementById('lblNationalId').innerText = nationalId;
-            document.getElementById('lblAdminName').innerText = adminName; 
-            document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
+    method: 'POST',
+    body: formData
+})
+.then(response => response.json())
+.then(data => {
+    if (data.result === 'success') {document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
             document.getElementById('lblSchoolName').innerText = schoolName;
             document.getElementById('lblDocType').innerText = docType;
             document.getElementById('lblDisabilityType').innerText = disabilityType;
