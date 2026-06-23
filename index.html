@@ -140,69 +140,72 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     const chosenDate = new Date(bookingDate);
     const chosenMonth = chosenDate.getUTCMonth() + 1; 
     if (chosenMonth < 6 || chosenMonth > 11) {
-        alert("عذراً، بناءً على التعليمات الرسمية: باب الحجز لتقديم طلبات الدمج يفتح من أول يونيو وينتهي بنهاية نوفمبر من كل عام فقط.");
+        alert("عذراً، باب الحجز لتقديم طلبات الدمج يفتح من أول يونيو وينتهي بنهاية نوفمبر من كل عام فقط.");
         return;
     }
 
     const day = chosenDate.getDay();
     if (day === 5 || day === 6) { 
-        alert("عذراً، إدارة الدمج لا تستقبل حجوزات أيام الجمعة والسبت. يرجى اختيار يوم عمل رسمي.");
+        alert("عذراً، إدارة الدمج لا تستقبل حجوزات أيام الجمعة والسبت.");
         return;
     }
 
     submitBtn.innerText = "جاري تأكيد الحجز والاتصال بالسيرفر...";
     submitBtn.disabled = true;
 
-    const formData = new FormData();
-    formData.append('student_name', studentName);
-    formData.append('national_id', nationalId);
-    formData.append('admin_name', adminName); 
-    formData.append('education_stage', edStage);
-    formData.append('grade_level', gradeLevel);
-    formData.append('school_name', schoolName);
-    formData.append('document_type', docType);
-    formData.append('disability_type', disabilityType);
-    formData.append('iq_score', iqScore);
-    formData.append('parent_phone', parentPhone);
-    formData.append('booking_date', bookingDate);
-    formData.append('time_slot', timeSlot);
+    // تحويل البيانات لصيغة نصية قياسية متوافقة تماماً مع الـ Apps Script لضمان التفعيل الفوري للشروط وضبط التكرار
+    const searchParams = new URLSearchParams();
+    searchParams.append('student_name', studentName);
+    searchParams.append('national_id', nationalId);
+    searchParams.append('admin_name', adminName); 
+    searchParams.append('education_stage', edStage);
+    searchParams.append('grade_level', gradeLevel);
+    searchParams.append('school_name', schoolName);
+    searchParams.append('document_type', docType);
+    searchParams.append('disability_type', disabilityType);
+    searchParams.append('iq_score', iqScore);
+    searchParams.append('parent_phone', parentPhone);
+    searchParams.append('booking_date', bookingDate);
+    searchParams.append('time_slot', timeSlot);
 
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbyXLHxvUZf-MgDYkVGP4sVfEqT_8bBhpMPIc-rWcfiWEZhiNQGuS94tfLwY5gIuYu4dAQ/exec'; 
 
-    // دالة موحدة لطباعة وعرض التذكرة منعاً لأي تعليق
-    function showTicket() {
-        document.getElementById('lblStudentName').innerText = studentName;
-        document.getElementById('lblNationalId').innerText = nationalId;
-        document.getElementById('lblAdminName').innerText = adminName;
-        document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
-        document.getElementById('lblSchoolName').innerText = schoolName;
-        document.getElementById('lblDocType').innerText = docType;
-        document.getElementById('lblDisabilityType').innerText = disabilityType;
-        document.getElementById('lblIqScore').innerText = iqScore;
-        document.getElementById('lblParentPhone').innerText = parentPhone;
-        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال " + timeSlot;
-
-        document.getElementById('bookingFormSection').style.display = 'none';
-        document.getElementById('ticketSection').style.display = 'block';
-    }
-
     fetch(webAppUrl, {
         method: 'POST',
-        body: formData,
-        mode: 'no-cors' // لمنع مشاكل الحظر الأمنية وضمان وصول البيانات وعرض التذكرة فوراً
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: searchParams.toString()
     })
-    .then(() => {
-        // طالما الطلب مر بسلام ووصل الشيت، أظهر التذكرة فوراً للمواطن
-        showTicket();
+    .then(response => response.json())
+    .then(data => {
+        if (data.result === 'success') {
+            // نجاح الحجز: طباعة البيانات وإظهار التذكرة بالكامل للمواطن
+            document.getElementById('lblStudentName').innerText = studentName;
+            document.getElementById('lblNationalId').innerText = nationalId;
+            document.getElementById('lblAdminName').innerText = adminName;
+            document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
+            document.getElementById('lblSchoolName').innerText = schoolName;
+            document.getElementById('lblDocType').innerText = docType;
+            document.getElementById('lblDisabilityType').innerText = disabilityType;
+            document.getElementById('lblIqScore').innerText = iqScore;
+            document.getElementById('lblParentPhone').innerText = parentPhone;
+            document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال " + timeSlot;
+
+            document.getElementById('bookingFormSection').style.display = 'none';
+            document.getElementById('ticketSection').style.display = 'block';
+        } else {
+            // السكريبت رفض الحجز (بسبب تكرار الرقم القومي أو اكتمال الـ 6 حجوزات)
+            alert(data.message);
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
     })
     .catch(error => {
         console.error("Error:", error);
-        // احتياطي في حالة انقطاع الشبكة المفاجئ
-        showTicket();
+        alert("حدث خطأ في الاتصال، أو البيانات مكررة بالفعل ومرفوضة من النظام.");
+        submitBtn.innerText = originalText;
+        submitBtn.disabled = false;
     });
 });
 </script>
-</body>
-</html>
 </body>
 </html>
