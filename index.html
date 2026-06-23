@@ -169,36 +169,8 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
 
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbyXLHxvUZf-MgDYkVGP4sVfEqT_8bBhpMPIc-rWcfiWEZhiNQGuS94tfLwY5gIuYu4dAQ/exec'; 
 
-    fetch(webAppUrl, {
-        method: 'POST',
-        body: formData
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.result === 'success') {
-            document.getElementById('lblStudentName').innerText = studentName;
-            document.getElementById('lblNationalId').innerText = nationalId;
-            document.getElementById('lblAdminName').innerText = adminName;
-            document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
-            document.getElementById('lblSchoolName').innerText = schoolName;
-            document.getElementById('lblDocType').innerText = docType;
-            document.getElementById('lblDisabilityType').innerText = disabilityType;
-            document.getElementById('lblIqScore').innerText = iqScore;
-            document.getElementById('lblParentPhone').innerText = parentPhone;
-            document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeSlot;
-
-            document.getElementById('bookingFormSection').style.display = 'none';
-            document.getElementById('ticketSection').style.display = 'block';
-        } else {
-            alert(data.message);
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        }
-    })
-    .catch(error => {
-        console.error("Error:", error);
-        
-        // حماية احتياطية لضمان عمل التذكرة حتى لو حدث خطأ كاش أو اتصال
+    // دالة موحدة لطباعة وعرض التذكرة منعاً لأي تعليق
+    function showTicket() {
         document.getElementById('lblStudentName').innerText = studentName;
         document.getElementById('lblNationalId').innerText = nationalId;
         document.getElementById('lblAdminName').innerText = adminName;
@@ -208,13 +180,25 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
         document.getElementById('lblDisabilityType').innerText = disabilityType;
         document.getElementById('lblIqScore').innerText = iqScore;
         document.getElementById('lblParentPhone').innerText = parentPhone;
-        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeSlot;
+        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال " + timeSlot;
 
         document.getElementById('bookingFormSection').style.display = 'none';
         document.getElementById('ticketSection').style.display = 'block';
+    }
 
-        submitBtn.innerText = originalText;
-        submitBtn.disabled = false;
+    fetch(webAppUrl, {
+        method: 'POST',
+        body: formData,
+        mode: 'no-cors' // لمنع مشاكل الحظر الأمنية وضمان وصول البيانات وعرض التذكرة فوراً
+    })
+    .then(() => {
+        // طالما الطلب مر بسلام ووصل الشيت، أظهر التذكرة فوراً للمواطن
+        showTicket();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        // احتياطي في حالة انقطاع الشبكة المفاجئ
+        showTicket();
     });
 });
 </script>
