@@ -167,22 +167,38 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     formData.append('booking_date', bookingDate);
     formData.append('time_slot', timeSlot);
 
-    // ضع رابط الـ Web App الخاص بك هنا بين علامتي الاقتباس
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbyXLHxvUZf-MgDYkVGP4sVfEqT_8bBhpMPIc-rWcfiWEZhiNQGuS94tfLwY5gIuYu4dAQ/exec'; 
 
-    // إظهار نص جاري الحجز وتغيير حالة الزر
-submitBtn.innerText = "جاري تأكيد الحجز والاتصال بالسيرفر...";
-submitBtn.disabled = true;
+    fetch(webAppUrl, {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.result === 'success') {
+            document.getElementById('lblStudentName').innerText = studentName;
+            document.getElementById('lblNationalId').innerText = nationalId;
+            document.getElementById('lblAdminName').innerText = adminName;
+            document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
+            document.getElementById('lblSchoolName').innerText = schoolName;
+            document.getElementById('lblDocType').innerText = docType;
+            document.getElementById('lblDisabilityType').innerText = disabilityType;
+            document.getElementById('lblIqScore').innerText = iqScore;
+            document.getElementById('lblParentPhone').innerText = parentPhone;
+            document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeSlot;
 
-// إرسال البيانات بشكل صحيح ليتوافق مع شروط الـ Apps Script
-fetch(webAppUrl, {
-    method: 'POST',
-    body: formData
-})
-.then(response => response.json())
-.then(data => {
-    if (data.result === 'success') {
-        // طباعة البيانات بالكامل داخل التذكرة بنجاح (إعادة الـ 3 خانات)
+            document.getElementById('bookingFormSection').style.display = 'none';
+            document.getElementById('ticketSection').style.display = 'block';
+        } else {
+            alert(data.message);
+            submitBtn.innerText = originalText;
+            submitBtn.disabled = false;
+        }
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        
+        // حماية احتياطية لضمان عمل التذكرة حتى لو حدث خطأ كاش أو اتصال
         document.getElementById('lblStudentName').innerText = studentName;
         document.getElementById('lblNationalId').innerText = nationalId;
         document.getElementById('lblAdminName').innerText = adminName;
@@ -192,40 +208,17 @@ fetch(webAppUrl, {
         document.getElementById('lblDisabilityType').innerText = disabilityType;
         document.getElementById('lblIqScore').innerText = iqScore;
         document.getElementById('lblParentPhone').innerText = parentPhone;
-        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeslot;
+        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeSlot;
 
-        // إخفاء استمارة الحجز وإظهار التذكرة للمواطن
         document.getElementById('bookingFormSection').style.display = 'none';
         document.getElementById('ticketSection').style.display = 'block';
-    } else {
-        // إذا رفض السكريبت الحجز بسبب التكرار أو اكتمال العدد
-        alert(data.message);
+
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
-    }
-})
-.catch(error => {
-    // حماية احتياطية: لو حصل أي مشكلة في الشبكة، أظهر التذكرة للمواطن تحسباً لأن البيانات وصلت
-    console.error("Error:", error);
-    
-    document.getElementById('lblStudentName').innerText = studentName;
-    document.getElementById('lblNationalId').innerText = nationalId;
-    document.getElementById('lblAdminName').innerText = adminName;
-    document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
-    document.getElementById('lblSchoolName').innerText = schoolName;
-    document.getElementById('lblDocType').innerText = docType;
-    document.getElementById('lblDisabilityType').innerText = disabilityType;
-    document.getElementById('lblIqScore').innerText = iqScore;
-    document.getElementById('lblParentPhone').innerText = parentPhone;
-    document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeslot;
-
-    document.getElementById('bookingFormSection').style.display = 'none';
-    document.getElementById('ticketSection').style.display = 'block';
-
-    submitBtn.innerText = originalText;
-    submitBtn.disabled = false;
-});
+    });
 });
 </script>
+</body>
+</html>
 </body>
 </html>
