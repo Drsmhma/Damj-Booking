@@ -170,33 +170,44 @@ document.getElementById('bookingForm').addEventListener('submit', function(e) {
     // ضع رابط الـ Web App الخاص بك هنا بين علامتي الاقتباس
     const webAppUrl = 'https://script.google.com/macros/s/AKfycbyXLHxvUZf-MgDYkVGP4sVfEqT_8bBhpMPIc-rWcfiWEZhiNQGuS94tfLwY5gIuYu4dAQ/exec'; 
 
-    fetch(webAppUrl, {
+    // إظهار نص جاري الحجز وتغيير حالة الزر
+submitBtn.innerText = "جاري تأكيد الحجز والاتصال بالسيرفر...";
+submitBtn.disabled = true;
+
+// إرسال البيانات بشكل صحيح ليتوافق مع شروط الـ Apps Script
+fetch(webAppUrl, {
     method: 'POST',
     body: formData
 })
 .then(response => response.json())
 .then(data => {
-    if (data.result === 'success') {document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
-            document.getElementById('lblSchoolName').innerText = schoolName;
-            document.getElementById('lblDocType').innerText = docType;
-            document.getElementById('lblDisabilityType').innerText = disabilityType;
-            document.getElementById('lblIqScore').innerText = iqScore;
-            document.getElementById('lblParentPhone').innerText = parentPhone;
-            document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeSlot;
+    if (data.result === 'success') {
+        // إعادة طباعة أول 3 خانات وباقي بيانات التذكرة بنجاح
+        document.getElementById('lblStudentName').innerText = studentName;
+        document.getElementById('lblNationalId').innerText = nationalId;
+        document.getElementById('lblAdminName').innerText = adminName;
+        document.getElementById('lblStageGrade').innerText = edStage + " - " + gradeLevel;
+        document.getElementById('lblSchoolName').innerText = schoolName;
+        document.getElementById('lblDocType').innerText = docType;
+        document.getElementById('lblDisabilityType').innerText = disabilityType;
+        document.getElementById('lblIqScore').innerText = iqScore;
+        document.getElementById('lblParentPhone').innerText = parentPhone;
+        document.getElementById('lblFinalDateTime').innerText = "يوم: " + bookingDate + " | خلال الفترة: " + timeslot;
 
-            document.getElementById('bookingFormSection').style.display = 'none';
-            document.getElementById('ticketSection').style.display = 'block';
-        } else {
-            alert(data.message);
-            submitBtn.innerText = originalText;
-            submitBtn.disabled = false;
-        }
-    })
-    .catch(error => {
-        alert("حدث خطأ في الاتصال بالشبكة، يرجى المحاولة مرة أخرى.");
+        // إخفاء الفورم وإظهار التذكرة للمواطن
+        document.getElementById('bookingFormSection').style.display = 'none';
+        document.getElementById('ticketSection').style.display = 'block';
+    } else {
+        // في حال رفض الشيت للحجز (رقم قومي مكرر أو فترة ممتلئة) تظهر هذه الرسالة فوراً
+        alert(data.message);
         submitBtn.innerText = originalText;
         submitBtn.disabled = false;
-    });
+    }
+})
+.catch(error => {
+    alert("حدث خطأ في الاتصال بالشبكة، يرجى المحاولة مرة أخرى.");
+    submitBtn.innerText = originalText;
+    submitBtn.disabled = false;
 });
 </script>
 </body>
